@@ -11,7 +11,7 @@ public class ExpressionGlobalVariables {
 
 	private static ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
-	public static void reset(Map<String, String> map){
+	public static void reset(Map<String, String> map) {
 		Lock lock = readWriteLock.writeLock();
 		lock.lock();
 		try {
@@ -22,7 +22,7 @@ public class ExpressionGlobalVariables {
 		}
 	}
 
-	public static Map<String, String> getVariables(){
+	public static Map<String, String> getVariables() {
 		Lock lock = readWriteLock.readLock();
 		lock.lock();
 		try {

@@ -9,83 +9,95 @@ import java.util.Date;
 @TableName("sp_datasource")
 public class DataSource {
 
-    @TableId(type = IdType.UUID)
-    private String id;
+	@TableId(type = IdType.ASSIGN_UUID)
+	private String id;
 
-    private String name;
+	private String name;
 
-    private String driverClassName;
+	private String driverClassName;
 
-    private String jdbcUrl;
+	private String jdbcUrl;
 
-    private String username;
+	private String username;
 
-    private String password;
+	private String password;
 
-    private Date createDate;
+	private Date createDate;
 
-    public DataSource() {
-    }
+	/**
+	 * JDBC连接池配置(JSON格式)
+	 */
+	private String connectionPoolConfig;
 
-    public DataSource(String id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+	public DataSource() {
+	}
 
-    public String getId() {
-        return id;
-    }
+	public DataSource(String id, String name) {
+		this.id = id;
+		this.name = name;
+	}
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getDriverClassName() {
-        return driverClassName;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setDriverClassName(String driverClassName) {
-        this.driverClassName = driverClassName;
-    }
+	public String getDriverClassName() {
+		return driverClassName;
+	}
 
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
+	public void setDriverClassName(String driverClassName) {
+		this.driverClassName = driverClassName;
+	}
 
-    public void setJdbcUrl(String jdbcUrl) {
-        this.jdbcUrl = jdbcUrl;
-    }
+	public String getJdbcUrl() {
+		return jdbcUrl;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public void setJdbcUrl(String jdbcUrl) {
+		this.jdbcUrl = jdbcUrl;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public Date getCreateDate() {
-        return createDate;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
+	public Date getCreateDate() {
+		return createDate;
+	}
 
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+
+	public String getConnectionPoolConfig() {
+		return connectionPoolConfig;
+	}
+
+	public void setConnectionPoolConfig(String connectionPoolConfig) {
+		this.connectionPoolConfig = connectionPoolConfig;
+	}
 }

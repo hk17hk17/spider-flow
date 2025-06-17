@@ -1,45 +1,43 @@
 package org.spiderflow.core.expression;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.StringUtils;
-import org.spiderflow.ExpressionEngine;
+import org.spiderflow.core.executor.FunctionExecutor;
+import org.spiderflow.core.executor.FunctionExtension;
 import org.spiderflow.core.expression.interpreter.Reflection;
-import org.spiderflow.executor.FunctionExecutor;
-import org.spiderflow.executor.FunctionExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.Map;
+
 @Component
-public class DefaultExpressionEngine implements ExpressionEngine{
-	
+public class DefaultExpressionEngine implements ExpressionEngine {
+
 	@Autowired
 	private List<FunctionExecutor> functionExecutors;
-	
+
 	@Autowired
 	private List<FunctionExtension> functionExtensions;
-	
+
 	@PostConstruct
-	private void init(){
+	private void init() {
 		for (FunctionExtension extension : functionExtensions) {
 			Reflection.getInstance().registerExtensionClass(extension.support(), extension.getClass());
 		}
 	}
-	
+
 	@Override
 	public Object execute(String expression, Map<String, Object> variables) {
-		if(StringUtils.isBlank(expression)){
+		if (StringUtils.isBlank(expression)) {
 			return expression;
 		}
 		ExpressionTemplateContext context = new ExpressionTemplateContext(variables);
 		for (FunctionExecutor executor : functionExecutors) {
 			context.set(executor.getFunctionPrefix(), executor);
 		}
-		ExpressionGlobalVariables.getVariables().entrySet().forEach(entry->{
-			context.set(entry.getKey(),ExpressionTemplate.create(entry.getValue()).render(context));
+		ExpressionGlobalVariables.getVariables().entrySet().forEach(entry -> {
+			context.set(entry.getKey(), ExpressionTemplate.create(entry.getValue()).render(context));
 		});
 		try {
 			ExpressionTemplateContext.set(context);
@@ -48,5 +46,4 @@ public class DefaultExpressionEngine implements ExpressionEngine{
 			ExpressionTemplateContext.remove();
 		}
 	}
-	
 }

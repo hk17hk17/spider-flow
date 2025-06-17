@@ -1,6 +1,5 @@
 package org.spiderflow.core.executor.shape;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
@@ -8,28 +7,36 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.jdbc.SQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spiderflow.context.SpiderContext;
-import org.spiderflow.core.serializer.FastJsonSerializer;
+import org.spiderflow.core.context.SpiderContext;
+import org.spiderflow.core.executor.ShapeExecutor;
+import org.spiderflow.core.http.SpiderResponse;
+import org.spiderflow.core.listener.SpiderListener;
+import org.spiderflow.core.model.SpiderNode;
+import org.spiderflow.core.model.SpiderOutput;
 import org.spiderflow.core.utils.DataSourceUtils;
 import org.spiderflow.core.utils.ExpressionUtils;
-import org.spiderflow.executor.ShapeExecutor;
-import org.spiderflow.io.SpiderResponse;
-import org.spiderflow.listener.SpiderListener;
-import org.spiderflow.model.SpiderNode;
-import org.spiderflow.model.SpiderOutput;
+import org.spiderflow.core.utils.JacksonUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 输出执行器
- * @author Administrator
  *
+ * @author Administrator
  */
 @Component
 public class OutputExecutor implements ShapeExecutor, SpiderListener {
+	private static Logger logger = LoggerFactory.getLogger(OutputExecutor.class);
 
 	public static final String OUTPUT_ALL = "output-all";
 
@@ -49,15 +56,13 @@ public class OutputExecutor implements ShapeExecutor, SpiderListener {
 
 	public static final String CSV_ENCODING = "csvEncoding";
 
-	private static Logger logger = LoggerFactory.getLogger(OutputExecutor.class);
-
 	/**
 	 * 输出CSVPrinter节点变量
 	 */
 	private Map<String, CSVPrinter> cachePrinter = new HashMap<>();
 
 	@Override
-	public void execute(SpiderNode node, SpiderContext context, Map<String,Object> variables) {
+	public void execute(SpiderNode node, SpiderContext context, Map<String, Object> variables) {
 		SpiderOutput output = new SpiderOutput();
 		output.setNodeName(node.getNodeName());
 		output.setNodeId(node.getNodeId());
@@ -78,17 +83,17 @@ public class OutputExecutor implements ShapeExecutor, SpiderListener {
 			String outputName = item.get(OUTPUT_NAME);
 			try {
 				value = ExpressionUtils.execute(outputValue, variables);
-				context.pause(node.getNodeId(),"common",outputName,value);
-				logger.debug("输出{}={}", outputName,value);
+				context.pause(node.getNodeId(), "common", outputName, value);
+				logger.debug("输出{}={}", outputName, value);
 			} catch (Exception e) {
-				logger.error("输出{}出错，异常信息：{}", outputName,e);
+				logger.error("输出{}出错，异常信息：{}", outputName, e);
 			}
 			output.addOutput(outputName, value);
 			if ((databaseFlag || csvFlag) && value != null) {
 				outputData.put(outputName, value.toString());
 			}
 		}
-		if(databaseFlag){
+		if (databaseFlag) {
 			String dsId = node.getStringJsonValue(DATASOURCE_ID);
 			String tableName = node.getStringJsonValue(TABLE_NAME);
 			if (StringUtils.isBlank(dsId)) {
@@ -108,10 +113,11 @@ public class OutputExecutor implements ShapeExecutor, SpiderListener {
 
 	/**
 	 * 输出所有参数
+	 *
 	 * @param output
 	 * @param variables
 	 */
-	private void outputAll(SpiderOutput output,Map<String,Object> variables){
+	private void outputAll(SpiderOutput output, Map<String, Object> variables) {
 		for (Map.Entry<String, Object> item : variables.entrySet()) {
 			Object value = item.getValue();
 			if (value instanceof SpiderResponse) {
@@ -125,9 +131,9 @@ public class OutputExecutor implements ShapeExecutor, SpiderListener {
 			}
 			//去除不能序列化的参数
 			try {
-				JSON.toJSONString(value, FastJsonSerializer.serializeConfig);
+				JacksonUtils.toJSONString(value);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Parsing the value:{} to JSON String for validing occur exception:\n{}.", value, e.getMessage());
 				continue;
 			}
 			//输出信息
@@ -223,11 +229,16 @@ public class OutputExecutor implements ShapeExecutor, SpiderListener {
 			if (printer != null) {
 				try {
 					printer.flush();
-					printer.close();
 					this.cachePrinter.remove(entry.getKey());
 				} catch (IOException e) {
 					logger.error("文件输出错误,异常信息:{}", e.getMessage(), e);
 					ExceptionUtils.wrapAndThrow(e);
+				} finally {
+					try {
+						printer.close();
+					} catch (Exception e) {
+						logger.error("As closing the printer occur exception:\n{}.", e.getMessage());
+					}
 				}
 			}
 		}

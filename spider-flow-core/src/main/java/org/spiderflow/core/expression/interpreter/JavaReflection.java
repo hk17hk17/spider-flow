@@ -14,12 +14,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JavaReflection extends Reflection {
 	private final Map<Class<?>, Map<String, Field>> fieldCache = new ConcurrentHashMap<Class<?>, Map<String, Field>>();
 	private final Map<Class<?>, Map<JavaReflection.MethodSignature, Method>> methodCache = new ConcurrentHashMap<Class<?>, Map<JavaReflection.MethodSignature, Method>>();
-	private final Map<Class<?>, Map<String,List<Method>>> extensionmethodCache = new ConcurrentHashMap<>();
+	private final Map<Class<?>, Map<String, List<Method>>> extensionmethodCache = new ConcurrentHashMap<>();
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Object getField (Object obj, String name) {
-		Class cls = obj instanceof Class ? (Class)obj : obj.getClass();
+	public Object getField(Object obj, String name) {
+		Class cls = obj instanceof Class ? (Class) obj : obj.getClass();
 		Map<String, Field> fields = fieldCache.get(cls);
 		if (fields == null) {
 			fields = new ConcurrentHashMap<String, Field>();
@@ -55,28 +55,28 @@ public class JavaReflection extends Reflection {
 	}
 
 	@Override
-	public Object getFieldValue (Object obj, Object field) {
-		Field javaField = (Field)field;
+	public Object getFieldValue(Object obj, Object field) {
+		Field javaField = (Field) field;
 		try {
 			return javaField.get(obj);
 		} catch (Throwable e) {
 			throw new RuntimeException("Couldn't get value of field '" + javaField.getName() + "' from object of type '" + obj.getClass().getSimpleName() + "'");
 		}
 	}
-	
+
 	@Override
-	public void registerExtensionClass(Class<?> target,Class<?> clazz){
+	public void registerExtensionClass(Class<?> target, Class<?> clazz) {
 		Method[] methods = clazz.getDeclaredMethods();
-		if(methods != null){
+		if (methods != null) {
 			Map<String, List<Method>> cachedMethodMap = extensionmethodCache.get(target);
-			if(cachedMethodMap == null){
+			if (cachedMethodMap == null) {
 				cachedMethodMap = new HashMap<>();
-				extensionmethodCache.put(target,cachedMethodMap);
+				extensionmethodCache.put(target, cachedMethodMap);
 			}
 			for (Method method : methods) {
-				if(Modifier.isStatic(method.getModifiers()) && method.getParameterCount() > 0){
+				if (Modifier.isStatic(method.getModifiers()) && method.getParameterCount() > 0) {
 					List<Method> cachedList = cachedMethodMap.get(method.getName());
-					if(cachedList == null){
+					if (cachedList == null) {
 						cachedList = new ArrayList<>();
 						cachedMethodMap.put(method.getName(), cachedList);
 					}
@@ -85,24 +85,24 @@ public class JavaReflection extends Reflection {
 			}
 		}
 	}
-	
+
 	@Override
 	public Object getExtensionMethod(Object obj, String name, Object... arguments) {
-		Class<?> cls = obj instanceof Class ? (Class<?>)obj : obj.getClass();
-		if(cls.isArray()){
+		Class<?> cls = obj instanceof Class ? (Class<?>) obj : obj.getClass();
+		if (cls.isArray()) {
 			cls = Object[].class;
 		}
-		return getExtensionMethod(cls,name,arguments);
+		return getExtensionMethod(cls, name, arguments);
 	}
-	
+
 	private Object getExtensionMethod(Class<?> cls, String name, Object... arguments) {
-		if(cls == null){
+		if (cls == null) {
 			cls = Object.class;
 		}
 		Map<String, List<Method>> methodMap = extensionmethodCache.get(cls);
-		if(methodMap != null){
+		if (methodMap != null) {
 			List<Method> methodList = methodMap.get(name);
-			if(methodList != null){
+			if (methodList != null) {
 				Class<?>[] parameterTypes = new Class[arguments.length + 1];
 				parameterTypes[0] = cls;
 				for (int i = 0; i < arguments.length; i++) {
@@ -111,24 +111,24 @@ public class JavaReflection extends Reflection {
 				return findMethod(methodList, parameterTypes);
 			}
 		}
-		if(cls != Object.class){
+		if (cls != Object.class) {
 			Class<?>[] interfaces = cls.getInterfaces();
-			if(interfaces != null){
+			if (interfaces != null) {
 				for (Class<?> clazz : interfaces) {
-					Object method = getExtensionMethod(clazz,name,arguments);
-					if(method != null){
+					Object method = getExtensionMethod(clazz, name, arguments);
+					if (method != null) {
 						return method;
 					}
 				}
 			}
-			return getExtensionMethod(cls.getSuperclass(),name,arguments);
+			return getExtensionMethod(cls.getSuperclass(), name, arguments);
 		}
 		return null;
 	}
 
 	@Override
-	public Object getMethod (Object obj, String name, Object... arguments) {
-		Class<?> cls = obj instanceof Class ? (Class<?>)obj : obj.getClass();
+	public Object getMethod(Object obj, String name, Object... arguments) {
+		Class<?> cls = obj instanceof Class ? (Class<?>) obj : obj.getClass();
 		Map<JavaReflection.MethodSignature, Method> methods = methodCache.get(cls);
 		if (methods == null) {
 			methods = new ConcurrentHashMap<JavaReflection.MethodSignature, Method>();
@@ -149,7 +149,7 @@ public class JavaReflection extends Reflection {
 					method = findApply(cls);
 				} else {
 					method = findMethod(cls, name, parameterTypes);
-					if(method == null && parameterTypes != null){
+					if (method == null && parameterTypes != null) {
 						method = findMethod(cls, name, new Class<?>[]{Object[].class});
 					}
 				}
@@ -181,21 +181,23 @@ public class JavaReflection extends Reflection {
 		return method;
 	}
 
-	/** Returns the <code>apply()</code> method of a functional interface. **/
-	private static Method findApply (Class<?> cls) {
+	/**
+	 * Returns the <code>apply()</code> method of a functional interface.
+	 **/
+	private static Method findApply(Class<?> cls) {
 		for (Method method : cls.getDeclaredMethods()) {
 			if (method.getName().equals("apply")) return method;
 		}
 		return null;
 	}
 
-	private static Method findMethod (List<Method> methods, Class<?>[] parameterTypes) {
+	private static Method findMethod(List<Method> methods, Class<?>[] parameterTypes) {
 		Method foundMethod = null;
 		int foundScore = 0;
 		for (Method method : methods) {
 			// Check if the types match.
 			Class<?>[] otherTypes = method.getParameterTypes();
-			if(parameterTypes.length != otherTypes.length){
+			if (parameterTypes.length != otherTypes.length) {
 				continue;
 			}
 			boolean match = true;
@@ -215,7 +217,7 @@ public class JavaReflection extends Reflection {
 							score++;
 						}
 					}
-				}else if(type == null && otherType.isPrimitive()){
+				} else if (type == null && otherType.isPrimitive()) {
 					match = false;
 					break;
 				}
@@ -234,9 +236,11 @@ public class JavaReflection extends Reflection {
 		}
 		return foundMethod;
 	}
-	
-	/** Returns the method best matching the given signature, including type coercion, or null. **/
-	private static Method findMethod (Class<?> cls, String name, Class<?>[] parameterTypes) {
+
+	/**
+	 * Returns the method best matching the given signature, including type coercion, or null.
+	 **/
+	private static Method findMethod(Class<?> cls, String name, Class<?>[] parameterTypes) {
 		Method[] methods = cls.getDeclaredMethods();
 		List<Method> methodList = new ArrayList<>();
 		for (int i = 0, n = methods.length; i < n; i++) {
@@ -247,14 +251,17 @@ public class JavaReflection extends Reflection {
 			if (method.getParameterTypes().length != parameterTypes.length) continue;
 			methodList.add(method);
 		}
-		return findMethod(methodList,parameterTypes);
+		return findMethod(methodList, parameterTypes);
 	}
 
-	/** Returns whether the from type can be assigned to the to type, assuming either type is a (boxed) primitive type. We can
+	/**
+	 * Returns whether the from type can be assigned to the to type, assuming either type is a (boxed) primitive type. We can
 	 * relax the type constraint a little, as we'll invoke a method via reflection. That means the from type will always be boxed,
-	 * as the {@link Method#invoke(Object, Object...)} method takes objects. **/
-	private static boolean isPrimitiveAssignableFrom (Class<?> from, Class<?> to) {
-		if ((from == Boolean.class || from == boolean.class) && (to == boolean.class || to == Boolean.class)) return true;
+	 * as the {@link Method#invoke(Object, Object...)} method takes objects.
+	 **/
+	private static boolean isPrimitiveAssignableFrom(Class<?> from, Class<?> to) {
+		if ((from == Boolean.class || from == boolean.class) && (to == boolean.class || to == Boolean.class))
+			return true;
 		if ((from == Integer.class || from == int.class) && (to == int.class || to == Integer.class)) return true;
 		if ((from == Float.class || from == float.class) && (to == float.class || to == Float.class)) return true;
 		if ((from == Double.class || from == double.class) && (to == double.class || to == Double.class)) return true;
@@ -264,21 +271,23 @@ public class JavaReflection extends Reflection {
 		if ((from == Character.class || from == char.class) && (to == char.class || to == Character.class)) return true;
 		return false;
 	}
-	
-	public static String[] getStringTypes(Object[] objects){
-		String[] parameterTypes = new String[objects == null ? 0: objects.length];
-		if(objects != null){
-			for(int i=0,len = objects.length;i<len;i++){
+
+	public static String[] getStringTypes(Object[] objects) {
+		String[] parameterTypes = new String[objects == null ? 0 : objects.length];
+		if (objects != null) {
+			for (int i = 0, len = objects.length; i < len; i++) {
 				Object value = objects[i];
-				parameterTypes[i] = value == null ? "null" : value.getClass().getSimpleName();  
+				parameterTypes[i] = value == null ? "null" : value.getClass().getSimpleName();
 			}
 		}
 		return parameterTypes;
 	}
 
-	/** Returns whether the from type can be coerced to the to type. The coercion rules follow those of Java. See JLS 5.1.2
-	 * https://docs.oracle.com/javase/specs/jls/se7/html/jls-5.html **/
-	private static boolean isCoercible (Class<?> from, Class<?> to) {
+	/**
+	 * Returns whether the from type can be coerced to the to type. The coercion rules follow those of Java. See JLS 5.1.2
+	 * https://docs.oracle.com/javase/specs/jls/se7/html/jls-5.html
+	 **/
+	private static boolean isCoercible(Class<?> from, Class<?> to) {
 		if (from == Integer.class || from == int.class) {
 			return to == float.class || to == Float.class || to == double.class || to == Double.class || to == long.class || to == Long.class;
 		}
@@ -293,48 +302,49 @@ public class JavaReflection extends Reflection {
 
 		if (from == Character.class || from == char.class) {
 			return to == int.class || to == Integer.class || to == float.class || to == Float.class || to == double.class || to == Double.class || to == long.class
-				|| to == Long.class;
+					|| to == Long.class;
 		}
 
 		if (from == Byte.class || from == byte.class) {
 			return to == int.class || to == Integer.class || to == float.class || to == Float.class || to == double.class || to == Double.class || to == long.class
-				|| to == Long.class || to == short.class || to == Short.class;
+					|| to == Long.class || to == short.class || to == Short.class;
 		}
 
 		if (from == Short.class || from == short.class) {
 			return to == int.class || to == Integer.class || to == float.class || to == Float.class || to == double.class || to == Double.class || to == long.class
-				|| to == Long.class;
+					|| to == Long.class;
 		}
 
 		if (from == Long.class || from == long.class) {
 			return to == float.class || to == Float.class || to == double.class || to == Double.class;
 		}
-		
-		if(from == int[].class || from == Integer[].class){
+
+		if (from == int[].class || from == Integer[].class) {
 			return to == Object[].class || to == float[].class || to == Float[].class || to == double[].class || to == Double[].class || to == long[].class || to == Long[].class;
 		}
-		
+
 		return false;
 	}
 
 	@Override
-	public Object callMethod (Object obj, Object method, Object... arguments) {
-		Method javaMethod = (Method)method;
+	public Object callMethod(Object obj, Object method, Object... arguments) {
+		Method javaMethod = (Method) method;
 		try {
 			return javaMethod.invoke(obj, arguments);
 		} catch (Throwable t) {
 			throw new RuntimeException("Couldn't call method '" + javaMethod.getName() + "' with arguments '" + Arrays.toString(arguments)
-				+ "' on object of type '" + obj.getClass().getSimpleName() + "'.", t);
+					+ "' on object of type '" + obj.getClass().getSimpleName() + "'.", t);
 		}
 	}
 
 	private static class MethodSignature {
 		private final String name;
-		@SuppressWarnings("rawtypes") private final Class[] parameters;
+		@SuppressWarnings("rawtypes")
+		private final Class[] parameters;
 		private final int hashCode;
 
 		@SuppressWarnings("rawtypes")
-		public MethodSignature (String name, Class[] parameters) {
+		public MethodSignature(String name, Class[] parameters) {
 			this.name = name;
 			this.parameters = parameters;
 			final int prime = 31;
@@ -345,16 +355,16 @@ public class JavaReflection extends Reflection {
 		}
 
 		@Override
-		public int hashCode () {
+		public int hashCode() {
 			return hashCode;
 		}
 
 		@Override
-		public boolean equals (Object obj) {
+		public boolean equals(Object obj) {
 			if (this == obj) return true;
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
-			JavaReflection.MethodSignature other = (JavaReflection.MethodSignature)obj;
+			JavaReflection.MethodSignature other = (JavaReflection.MethodSignature) obj;
 			if (name == null) {
 				if (other.name != null) return false;
 			} else if (!name.equals(other.name)) return false;

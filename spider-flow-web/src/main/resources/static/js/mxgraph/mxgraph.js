@@ -75181,7 +75181,7 @@ mxRubberband.prototype.start = function(x, y)
 
 /**
  * Function: mouseMove
- * 
+ *
  * Handles the event by updating therubberband selection.
  */
 mxRubberband.prototype.mouseMove = function(sender, me)

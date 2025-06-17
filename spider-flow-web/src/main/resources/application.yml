@@ -1,0 +1,76 @@
+server:
+  port: 8088
+  undertow:
+    threads:
+      worker: 200
+      io: 8
+    buffer-size: 65536
+    eager-filter-init: true
+    direct-buffers: true
+    max-http-post-size: 209715200
+    record-request-start-time: true
+    accesslog:
+      enabled: true
+      dir: ./logs
+      pattern: '%t[%I] %{i,x_forwarded_for} "%{i,Referer}" "%{i,User-Agent}" %a "%r" %s %b (%D ms)'
+
+
+spider:
+  # id生成策略
+  idGeneratorStrategy: snow-flake
+  # 工作机器id
+  workerId: 1
+  # 数据中心id
+  datacenterId: 1
+  # 是否为重试后仍然失败的请求记录日志
+  record-failed-request-after-retry: true
+  notice:
+    content:
+      end: 流程执行完毕：{name}，结束时间：{currentDate}
+      exception: 流程发生异常：{name}，异常时间：{currentDate}
+      start: 流程开始执行：{name}，开始时间：{currentDate}
+    subject: spider-flow流程通知
+
+
+spring:
+  profiles:
+    active: @profiles.active@
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration,org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+  favicon:
+    enabled: false
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      fail_on_empty_beans: false
+    time-zone: Asia/Shanghai
+  banner:
+    charset: utf-8
+    location: classpath:banner.txt
+  output:
+    ansi:
+      enabled: ALWAYS
+
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: assign_id
+    banner: false
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+pagehelper:
+  params: count=countSql
+  support-methods-arguments: true
+  helper-dialect: mysql
+  auto-runtime-dialect: false
+  reasonable: false
+
+selenium:
+  driver:
+    chrome: D:/chromedriver-127.0.6533.119-win64/chromedriver.exe
+    firefox: D:/geckodriver-v0.34.0-win64/geckodriver.exe
+
+logging:
+  level:
+    root: INFO

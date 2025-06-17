@@ -1,8 +1,8 @@
 package org.spiderflow.core.executor.function;
 
-import org.spiderflow.annotation.Comment;
-import org.spiderflow.annotation.Example;
-import org.spiderflow.executor.FunctionExecutor;
+import org.spiderflow.core.annotation.Comment;
+import org.spiderflow.core.annotation.Example;
+import org.spiderflow.core.executor.FunctionExecutor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,18 +13,18 @@ import org.springframework.stereotype.Component;
 @Component
 @Comment("thread常用方法")
 public class ThreadFunctionExecutor implements FunctionExecutor {
-    @Override
-    public String getFunctionPrefix() {
-        return "thread";
-    }
+	@Override
+	public String getFunctionPrefix() {
+		return "thread";
+	}
 
-    @Comment("线程休眠")
-    @Example("${thread.sleep(1000L)}")
-    public static void sleep(Long sleepTime){
-        try {
-            Thread.sleep(sleepTime);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+	@Comment("线程休眠")
+	@Example("${thread.sleep(1000L)}")
+	public static void sleep(Long sleepTime) {
+		try {
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

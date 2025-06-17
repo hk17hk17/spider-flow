@@ -13,123 +13,123 @@ import java.util.Date;
 @TableName("sp_flow")
 public class SpiderFlow {
 
-    @TableId(type = IdType.UUID)
-    private String id;
+	@TableId(type = IdType.ASSIGN_UUID)
+	private String id;
 
-    /**
-     * 定时任务表达式
-     */
-    private String cron;
+	/**
+	 * 定时任务表达式
+	 */
+	private String cron;
 
-    private String name;
+	private String name;
 
-    /**
-     * xml流程图
-     */
-    private String xml;
+	/**
+	 * xml流程图
+	 */
+	private String xml;
 
-    private String enabled;
+	private String enabled;
 
-    private Date createDate;
+	private Date createDate;
 
-    private Date lastExecuteTime;
+	private Date lastExecuteTime;
 
-    private Date nextExecuteTime;
+	private Date nextExecuteTime;
 
-    /**
-     * 定时执行的执行次数
-     */
-    private Integer executeCount;
+	/**
+	 * 定时执行的执行次数
+	 */
+	private Integer executeCount;
 
-    @TableField(exist = false)
-    private Integer running;
+	@TableField(exist = false)
+	private Integer running;
 
 
-    public SpiderFlow() {
-    }
+	public SpiderFlow() {
+	}
 
-    public SpiderFlow(String id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+	public SpiderFlow(String id, String name) {
+		this.id = id;
+		this.name = name;
+	}
 
-    public String getId() {
-        return id;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getXml() {
-        return xml;
-    }
+	public String getXml() {
+		return xml;
+	}
 
-    public void setXml(String xml) {
-        this.xml = xml;
-    }
+	public void setXml(String xml) {
+		this.xml = xml;
+	}
 
-    public String getCron() {
-        return cron;
-    }
+	public String getCron() {
+		return cron;
+	}
 
-    public void setCron(String cron) {
-        this.cron = cron;
-    }
+	public void setCron(String cron) {
+		this.cron = cron;
+	}
 
-    public String getEnabled() {
-        return enabled;
-    }
+	public String getEnabled() {
+		return enabled;
+	}
 
-    public void setEnabled(String enabled) {
-        this.enabled = enabled;
-    }
+	public void setEnabled(String enabled) {
+		this.enabled = enabled;
+	}
 
-    public Date getCreateDate() {
-        return createDate;
-    }
+	public Date getCreateDate() {
+		return createDate;
+	}
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
 
-    public Date getLastExecuteTime() {
-        return lastExecuteTime;
-    }
+	public Date getLastExecuteTime() {
+		return lastExecuteTime;
+	}
 
-    public void setLastExecuteTime(Date lastExecuteTime) {
-        this.lastExecuteTime = lastExecuteTime;
-    }
+	public void setLastExecuteTime(Date lastExecuteTime) {
+		this.lastExecuteTime = lastExecuteTime;
+	}
 
-    public Date getNextExecuteTime() {
-        return nextExecuteTime;
-    }
+	public Date getNextExecuteTime() {
+		return nextExecuteTime;
+	}
 
-    public void setNextExecuteTime(Date nextExecuteTime) {
-        this.nextExecuteTime = nextExecuteTime;
-    }
+	public void setNextExecuteTime(Date nextExecuteTime) {
+		this.nextExecuteTime = nextExecuteTime;
+	}
 
-    public Integer getExecuteCount() {
-        return executeCount;
-    }
+	public Integer getExecuteCount() {
+		return executeCount;
+	}
 
-    public void setExecuteCount(Integer executeCount) {
-        this.executeCount = executeCount;
-    }
+	public void setExecuteCount(Integer executeCount) {
+		this.executeCount = executeCount;
+	}
 
-    public Integer getRunning() {
-        return running;
-    }
+	public Integer getRunning() {
+		return running;
+	}
 
-    public void setRunning(Integer running) {
-        this.running = running;
-    }
+	public void setRunning(Integer running) {
+		this.running = running;
+	}
 }

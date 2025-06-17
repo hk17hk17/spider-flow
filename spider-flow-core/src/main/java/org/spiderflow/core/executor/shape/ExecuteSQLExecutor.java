@@ -4,14 +4,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spiderflow.Grammerable;
-import org.spiderflow.context.SpiderContext;
+import org.spiderflow.core.context.SpiderContext;
+import org.spiderflow.core.executor.ShapeExecutor;
+import org.spiderflow.core.expression.Grammerable;
+import org.spiderflow.core.model.Grammer;
+import org.spiderflow.core.model.SpiderNode;
 import org.spiderflow.core.utils.DataSourceUtils;
 import org.spiderflow.core.utils.ExpressionUtils;
 import org.spiderflow.core.utils.ExtractUtils;
-import org.spiderflow.executor.ShapeExecutor;
-import org.spiderflow.model.Grammer;
-import org.spiderflow.model.SpiderNode;
 import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -21,7 +21,11 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Array;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * SQL执行器
@@ -50,7 +54,7 @@ public class ExecuteSQLExecutor implements ShapeExecutor, Grammerable {
 	public static final String STATEMENT_DELETE = "delete";
 	public static final String SELECT_RESULT_STREAM = "isStream";
 	public static final String STATEMENT_INSERT_PK = "insertofPk";
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ExecuteSQLExecutor.class);
 
 	@Override
@@ -68,12 +72,12 @@ public class ExecuteSQLExecutor implements ShapeExecutor, Grammerable {
 			sql = sql.replaceAll("#(.*?)#", "?");
 			try {
 				Object sqlObject = ExpressionUtils.execute(sql, variables);
-				if(sqlObject == null){
+				if (sqlObject == null) {
 					logger.warn("获取的sql为空！");
 					return;
 				}
 				sql = sqlObject.toString();
-				context.pause(node.getNodeId(),"common",SQL,sql);
+				context.pause(node.getNodeId(), "common", SQL, sql);
 			} catch (Exception e) {
 				logger.error("获取sql出错,异常信息:{}", e.getMessage(), e);
 				ExceptionUtils.wrapAndThrow(e);
@@ -154,7 +158,7 @@ public class ExecuteSQLExecutor implements ShapeExecutor, Grammerable {
 					variables.put("rs", -1);
 					ExceptionUtils.wrapAndThrow(e);
 				}
-			} else if(STATEMENT_INSERT_PK.equals(statementType)) {
+			} else if (STATEMENT_INSERT_PK.equals(statementType)) {
 				try {
 					KeyHolder keyHolder = new GeneratedKeyHolder();
 					final String insertSQL = sql;
@@ -172,6 +176,7 @@ public class ExecuteSQLExecutor implements ShapeExecutor, Grammerable {
 			}
 		}
 	}
+
 	private List<Object[]> convertParameters(Object[] params, int length) {
 		List<Object[]> result = new ArrayList<>(length);
 		int size = params.length;
@@ -218,6 +223,4 @@ public class ExecuteSQLExecutor implements ShapeExecutor, Grammerable {
 		grammer.setReturns(Arrays.asList("List<Map<String,Object>>", "int"));
 		return Collections.singletonList(grammer);
 	}
-
-
 }

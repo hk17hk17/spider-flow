@@ -1,35 +1,34 @@
 package org.spiderflow.core.job;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.spiderflow.core.context.SpiderContext;
+import org.spiderflow.core.model.SpiderOutput;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.spiderflow.context.SpiderContext;
-import org.spiderflow.model.SpiderOutput;
-
-public class SpiderJobContext extends SpiderContext{
-
+public class SpiderJobContext extends SpiderContext {
 	private static final long serialVersionUID = 9099787449108938453L;
-	
-	private static Logger logger = LoggerFactory.getLogger(SpiderJobContext.class);
-	
+	private static final Logger logger = LoggerFactory.getLogger(SpiderJobContext.class);
+
 	private OutputStream outputstream;
 
 	private List<SpiderOutput> outputs = new ArrayList<>();
 
 	private boolean output;
 
-	public SpiderJobContext(OutputStream outputstream,boolean output) {
+	public SpiderJobContext(String instanceId, OutputStream outputstream, boolean output) {
 		super();
+		this.instanceId = instanceId;
 		this.outputstream = outputstream;
 		this.output = output;
 	}
-	
-	public void close(){
+
+	public void close() {
 		try {
 			this.outputstream.close();
 		} catch (Exception e) {
@@ -38,8 +37,8 @@ public class SpiderJobContext extends SpiderContext{
 
 	@Override
 	public void addOutput(SpiderOutput output) {
-		if(this.output){
-			synchronized (this.outputs){
+		if (this.output) {
+			synchronized (this.outputs) {
 				this.outputs.add(output);
 			}
 		}
@@ -50,23 +49,23 @@ public class SpiderJobContext extends SpiderContext{
 		return outputs;
 	}
 
-	public OutputStream getOutputstream(){
+	public OutputStream getOutputstream() {
 		return this.outputstream;
 	}
-	
-	public static SpiderJobContext create(String directory,String id,Integer taskId,boolean output){
+
+	public static SpiderJobContext create(String directory, String id, String jobHistoryId, boolean output) {
 		OutputStream os = null;
 		try {
-			File file = new File(new File(directory),id + File.separator + "logs" + File.separator + taskId + ".log");
+			File file = new File(new File(directory), id + File.separator + "logs" + File.separator + jobHistoryId + ".log");
 			File dirFile = file.getParentFile();
-			if(!dirFile.exists()){
+			if (!dirFile.exists()) {
 				dirFile.mkdirs();
 			}
 			os = new FileOutputStream(file, true);
 		} catch (Exception e) {
-			logger.error("创建日志文件出错",e);
+			logger.error("创建日志文件出错", e);
 		}
-		SpiderJobContext context = new SpiderJobContext(os, output);
+		SpiderJobContext context = new SpiderJobContext(jobHistoryId, os, output);
 		context.setFlowId(id);
 		return context;
 	}

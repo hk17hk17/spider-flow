@@ -1,19 +1,22 @@
 package org.spiderflow.model;
 
+import java.io.Serializable;
+
 /**
  * WebSocket事件
- * @author Administrator
  *
  * @param <T>
+ * @author Administrator
  */
-public class WebSocketEvent<T> {
-	
+public class WebSocketEvent<T> implements Serializable {
+	private static final long serialVersionUID = 8379590378417619790L;
+
 	private String eventType;
-	
+
 	private String timestamp;
-	
+
 	private T message;
-	
+
 	public String getTimestamp() {
 		return timestamp;
 	}
@@ -26,7 +29,7 @@ public class WebSocketEvent<T> {
 		this.eventType = eventType;
 		this.message = message;
 	}
-	
+
 	public WebSocketEvent(String eventType, String timestamp, T message) {
 		this.eventType = eventType;
 		this.timestamp = timestamp;

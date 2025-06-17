@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * 邮件发送工具类
- * 
+ *
  * @author BillDowney
  * @date 2020年4月4日 上午12:31:09
  */
@@ -24,7 +24,7 @@ public class EmailUtils {
 
 	/**
 	 * 发送简单文本邮件
-	 * 
+	 *
 	 * @param subject 主题
 	 * @param content 内容
 	 * @param to      收件人列表

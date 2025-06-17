@@ -1,19 +1,20 @@
 package org.spiderflow.core.io;
 
-import com.alibaba.fastjson.JSON;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
-import org.spiderflow.io.SpiderResponse;
+import org.spiderflow.core.http.SpiderResponse;
+import org.spiderflow.core.utils.JacksonUtils;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
  * 响应对象包装类
- * @author Administrator
  *
+ * @author Administrator
  */
-public class HttpResponse implements SpiderResponse{
+public class HttpResponse implements SpiderResponse {
 
 	private Response response;
 
@@ -25,24 +26,26 @@ public class HttpResponse implements SpiderResponse{
 
 	private String titleName;
 
-	private Object jsonValue;
+	private Map<String, Object> jsonMap;
 
-	public HttpResponse(Response response){
+	private List<Map<String, Object>> jsonList;
+
+	public HttpResponse(Response response) {
 		super();
 		this.response = response;
 		this.statusCode = response.statusCode();
 		this.urlLink = response.url().toExternalForm();
 	}
-	
+
 	@Override
-	public int getStatusCode(){
+	public int getStatusCode() {
 		return statusCode;
 	}
 
 	@Override
 	public String getTitle() {
 		if (titleName == null) {
-			synchronized (this){
+			synchronized (this) {
 				titleName = Jsoup.parse(getHtml()).title();
 			}
 		}
@@ -50,40 +53,48 @@ public class HttpResponse implements SpiderResponse{
 	}
 
 	@Override
-	public String getHtml(){
-		if(htmlValue == null){
-			synchronized (this){
+	public String getHtml() {
+		if (htmlValue == null) {
+			synchronized (this) {
 				htmlValue = response.body();
 			}
 		}
 		return htmlValue;
 	}
-	
+
 	@Override
-	public Object getJson(){
-		if(jsonValue == null){
-			jsonValue = JSON.parse(getHtml());
+	public Map<String, Object> getJsonMap() {
+		if (jsonMap == null || jsonMap.size() <= 0) {
+			jsonMap = JacksonUtils.json2Map(getHtml());
 		}
-		return jsonValue;
+		return jsonMap;
 	}
-	
+
 	@Override
-	public Map<String,String> getCookies(){
+	public List<Map<String, Object>> getJsonList() {
+		if (jsonList == null || jsonList.size() <= 0) {
+			jsonList = JacksonUtils.json2ListMap(getHtml());
+		}
+		return jsonList;
+	}
+
+	@Override
+	public Map<String, String> getCookies() {
 		return response.cookies();
 	}
-	
+
 	@Override
-	public Map<String,String> getHeaders(){
+	public Map<String, String> getHeaders() {
 		return response.headers();
 	}
-	
+
 	@Override
-	public byte[] getBytes(){
+	public byte[] getBytes() {
 		return response.bodyAsBytes();
 	}
-	
+
 	@Override
-	public String getContentType(){
+	public String getContentType() {
 		return response.contentType();
 	}
 
